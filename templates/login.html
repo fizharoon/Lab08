@@ -29,6 +29,12 @@
 
 {% extends 'bootstrap/base.html' %}
 
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
 {% block body %}
 <body>
     <h1>Welcome to School University!</h1>
@@ -39,8 +45,6 @@
         {{ form.password }}
         {{ form.submit }}
     </form>
-    <br>
-    <a href="{{ url_for('register') }}">Don't have an account? Sign Up</a>
     <br>
     <a href="{{ url_for('home') }}">Back to Home</a>
 
