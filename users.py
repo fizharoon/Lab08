@@ -9,9 +9,9 @@ from flask_login import current_user, login_user
 
 app = Flask(__name__)
 # CORS(app)
-app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.sqlite" 
-app.config["SECRET_KEY"] = 'urmom'
+app.config["SECRET_KEY"] = 'secretkey'
 db = SQLAlchemy(app)
 
 admin = Admin(app)
@@ -26,37 +26,55 @@ class Teacher(db.Model):
     name = db.Column('name', db.String(100))
     user_id = db.Column('user_id', db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('Teacher', uselist=False))
+    # classes = db.relationship('Classes', backref='owner')
 
+# many to many relationship between student and classes 
 class Student(db.Model):
+    __tablename__ = 'Student'
     id = db.Column('id', db.Integer, primary_key = True)
     name = db.Column('name', db.String(100))
     user_id = db.Column('user_id', db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('Student', uselist=False))
 
-# class UserView(ModelView): 
-#     column_searchable_list = ['username'] # make columns searchable
-#     form_choices = { # restrict the possible values for a text-field
-#     'title': [ 
-#         ('MR', 'Mr'), 
-#         ('MRS', 'Mrs'), 
-#         ('MS', 'Ms'), 
-#         ('DR', 'Dr')
-#         ] 
-#     } 
-#     can_export = True # enable csv export of the model view
+    # enrollment = db.relationship('Enrollment', backref=db.backref('Student'))
 
-# class Classes(db.Model):
-#     id = db.Column('id', db.Integer, primary_key = True)
-#     name = db.Column('name', db.String(100))
-#     user_id = db.Column('user_id', db.ForeignKey('user.id'), nullable=False)
-#     user = db.relationship('User', backref=db.backref('Student', uselist=False))
+class Courses(db.Model):
+    __tablename__ = 'Courses'
+    id = db.Column('id', db.Integer, primary_key = True)
+    courseName =  db.Column('c_name', db.String(100))
+    teacher_id = db.Column('teacher_id', db.ForeignKey('teacher.id'), nullable=False)
+    numEnrolled = db.Column('numEnrolled', db.Integer)
+    capacity = db.Column('capacity', db.Integer)
+    time = db.Column('time', db.String(100))
+    teacher = db.relationship('Teacher', backref=db.backref('Courses'))
+    # students = db.relationship('Student', secondary=enrollment_course, backref=db.backref('Courses'))
 
+class Enrollment(db.Model):
+    __tablename__='Enrollment'
+    id = db.Column('id', db.Integer, primary_key = True)
+    student_id = db.Column('student_id', db.ForeignKey('Student.id'), nullable=False)
+    course_id = db.Column('course_id', db.ForeignKey('Courses.id'), nullable=False)
+    grade = db.Column('grade', db.Integer)
+    student = db.relationship('Student', backref=db.backref('Enrollment'))
+    courses = db.relationship('Courses', backref=db.backref('Enrollment'))
 
-# admin.add_view(UserView(User, db.session)) 
+class CourseView(ModelView):
+    # course_name = Courses.courseName
+    column_labels = {'Teacher.Name': 'Teacher'}
+    column_list = ['courseName','teacher.name','numEnrolled','capacity','time']
+
+class EnrollmentView(ModelView):
+    # column_labels =
+    # column_labels = dict(name='Name', last_name='Last Name')
+    column_list = ['student.name', 'courses.courseName', 'grade']
 
 admin.add_view(ModelView(User, db.session))
 admin.add_view(ModelView(Teacher, db.session))
 admin.add_view(ModelView(Student, db.session))
+# admin.add_view(ModelView(Courses, db.session))
+admin.add_view(CourseView(Courses, db.session))
+# admin.add_view(ModelView(Enrollment, db.session))
+admin.add_view(EnrollmentView(Enrollment, db.session))
 
 if __name__=='__main__':
     with app.app_context():
