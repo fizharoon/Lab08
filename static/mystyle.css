@@ -1,7 +1,22 @@
 
 body {
   font-family: Arial;
+  text-align: center;
+  vertical-align: center;
+  border-width: 5px;
+  border-style: outset;
+  margin: 20px;
+  padding: 10px;
 }
+
+h1, h2, h3{
+    padding: 10px;
+}
+
+form {
+    padding: 5px;
+}
+
 
 /* Style the tab */
 .tab {
@@ -54,3 +69,4 @@ td, th {
 tr:nth-child(even) {
   background-color: #dddddd;
 }
+

@@ -9,14 +9,13 @@
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet"
-      href="{{url_for('.static', filename='mystyle.css')}}">
+<link rel="stylesheet" href="{{url_for('.static', filename='mystyle.css')}}">
 {% endblock %}
 
 {% block body %}
 <body>
-{% block content %}
-<div id="Your Courses" class="tabcontent">
+
+<div id="Your Courses" >
   <h3>Your Courses</h3>
   <table>
     <tr>
@@ -41,7 +40,7 @@
   </table>
 
 </div>
-{% endblock %}
+
 
 </body>
 {% endblock %}

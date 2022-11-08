@@ -214,5 +214,22 @@ def getAllCourses():
 
 
 
+
+
+@app.route('/courses', methods=['GET', 'POST'])
+# @login_required
+def courses():
+    return render_template('courses.html')
+
+@app.route('/teacher', methods=['GET', 'POST'])
+# @login_required
+def teacher():
+    return render_template('teacher.html')
+
+@app.route('/student', methods=['GET', 'POST'])
+# @login_required
+def student():
+    return render_template('student.html')
+
 if __name__ == "__main__":
     app.run(debug=True)
