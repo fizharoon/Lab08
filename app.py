@@ -64,8 +64,8 @@ class Teacher(db.Model):
     user_id = db.Column('user_id', db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('Teacher', uselist=False))
     # classes = db.relationship('Classes', backref='owner')
-# class TeacherView(ModelView):
-#     column_list = ['user.username','name']
+class TeacherView(ModelView):
+    column_list = ['user.username','name']
 # many to many relationship between student and classes
 class Student(db.Model):
     __tablename__ = 'Student'
@@ -75,8 +75,8 @@ class Student(db.Model):
     user = db.relationship('User', backref=db.backref('Student', uselist=False))
 
     # enrollment = db.relationship('Enrollment', backref=db.backref('Student'))
-# class StudentView(ModelView):
-#     column_list = ['user.username','name']
+class StudentView(ModelView):
+    column_list = ['user.username','name']
 
 class Courses(db.Model):
     __tablename__ = 'Courses'
@@ -125,11 +125,11 @@ class EnrollmentView(ModelView):
 
 
 admin.add_view(MyModelView(User, db.session))
-admin.add_view(MyModelView(Teacher, db.session))
-# admin.add_view(TeacherView(Teacher, db.session))
+# admin.add_view(MyModelView(Teacher, db.session))
+admin.add_view(TeacherView(Teacher, db.session))
 
-admin.add_view(MyModelView(Student, db.session))
-# admin.add_view(StudentView(Student, db.session))
+# admin.add_view(MyModelView(Student, db.session))
+admin.add_view(StudentView(Student, db.session))
 
 # admin.add_view(ModelView(Courses, db.session))
 admin.add_view(CourseView(Courses, db.session))
@@ -282,6 +282,28 @@ def getStudentGrades(courseid):
     # print(studentGrades)
     return studentGrades
 
+
+
+# @app.route('/grades/<name>', methods=['PUT'])
+# def update_grade(name):
+#     student = Grade.query.get(name)
+#     student.name = request.json['name']
+#     student.grade = request.json['grade']
+#     db.session.commit()
+#     return {student.name: student.grade}
+    
+# add student to course
+# @app.route('/addstudent', methods=['POST'])
+# def addStudentToClass():
+
+# @app.route('/grades/<name>', methods=['DELETE'])
+# def delete_student(name):
+#     student = Grade.query.get(name)
+#     db.session.delete(student)
+#     db.session.commit() 
+#     return {student.name: student.grade}
+    
+# # remove student from course
 
 
 
