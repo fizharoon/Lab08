@@ -17,6 +17,18 @@ form {
     padding: 5px;
 }
 
+.button {
+    text-align: left;
+}
+
+.col1, .col3 {
+    width: 220px;
+}
+
+col2 {
+    width: 440px;
+}
+
 
 /* Style the tab */
 .tab {
