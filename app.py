@@ -6,7 +6,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from flask_bootstrap import Bootstrap
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 
 app = Flask(__name__)
@@ -17,7 +17,41 @@ app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
 app.config['SECRET_KEY'] = 'secretKey'
 db = SQLAlchemy(app)
-admin = Admin(app)
+
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+class MyModelView(ModelView):
+    def is_accessible(self):
+        if(current_user.is_authenticated):
+            isStudent = Student.query.filter_by(user_id=current_user.id).first()
+            isTeacher = Teacher.query.filter_by(user_id=current_user.id).first()
+            if(not(isStudent or isTeacher)):
+                return current_user.is_authenticated
+        
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('login'))
+
+class MyAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        if(current_user.is_authenticated):
+            isStudent = Student.query.filter_by(user_id=current_user.id).first()
+            isTeacher = Teacher.query.filter_by(user_id=current_user.id).first()
+            if(not(isStudent or isTeacher)):
+                return current_user.is_authenticated
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('login'))
+
+admin = Admin(app, index_view=MyAdminIndexView())
+
 
 class User(db.Model, UserMixin):
     id = db.Column('id', db.Integer, primary_key = True)
@@ -30,7 +64,8 @@ class Teacher(db.Model):
     user_id = db.Column('user_id', db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('Teacher', uselist=False))
     # classes = db.relationship('Classes', backref='owner')
-
+class TeacherView(ModelView):
+    column_list = ['user.username','name']
 # many to many relationship between student and classes
 class Student(db.Model):
     __tablename__ = 'Student'
@@ -40,6 +75,8 @@ class Student(db.Model):
     user = db.relationship('User', backref=db.backref('Student', uselist=False))
 
     # enrollment = db.relationship('Enrollment', backref=db.backref('Student'))
+class StudentView(ModelView):
+    column_list = ['user.username','name']
 
 class Courses(db.Model):
     __tablename__ = 'Courses'
@@ -62,32 +99,42 @@ class Enrollment(db.Model):
     courses = db.relationship('Courses', backref=db.backref('Enrollment'))
 
 class CourseView(ModelView):
-    # course_name = Courses.courseName
+    def is_accessible(self):
+        if(current_user.is_authenticated):
+            isStudent = Student.query.filter_by(user_id=current_user.id).first()
+            isTeacher = Teacher.query.filter_by(user_id=current_user.id).first()
+            if(not(isStudent or isTeacher)):
+                return current_user.is_authenticated
+        
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('login'))
     column_labels = {'Teacher.Name': 'Teacher'}
     column_list = ['courseName','teacher.name','numEnrolled','capacity','time']
 
 class EnrollmentView(ModelView):
-    # column_labels =
-    # column_labels = dict(name='Name', last_name='Last Name')
+    def is_accessible(self):
+        if(current_user.is_authenticated):
+            isStudent = Student.query.filter_by(user_id=current_user.id).first()
+            isTeacher = Teacher.query.filter_by(user_id=current_user.id).first()
+            if(not(isStudent or isTeacher)):
+                return current_user.is_authenticated
+        
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('login'))
     column_list = ['student.name', 'courses.courseName', 'grade']
 
-admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(Teacher, db.session))
-admin.add_view(ModelView(Student, db.session))
+
+admin.add_view(MyModelView(User, db.session))
+# admin.add_view(MyModelView(Teacher, db.session))
+admin.add_view(TeacherView(Teacher, db.session))
+
+# admin.add_view(MyModelView(Student, db.session))
+admin.add_view(StudentView(Student, db.session))
+
 # admin.add_view(ModelView(Courses, db.session))
 admin.add_view(CourseView(Courses, db.session))
 # admin.add_view(ModelView(Enrollment, db.session))
 admin.add_view(EnrollmentView(Enrollment, db.session))
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 
 # class User(db.Model, UserMixin):
 #     id = db.Column(db.Integer, primary_key=True)
@@ -97,11 +144,8 @@ def load_user(user_id):
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-
-    password = PasswordField(validators=[InputRequired(), Length(min=2, max=20)], render_kw={"placeholder": "Password"})
-
+    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField('Register')
-
     def validate_username(self, username):
         existing_user_username = User.query.filter_by(
             username=username.data).first()
@@ -112,9 +156,7 @@ class RegisterForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-
-    password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
-
+    password = PasswordField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField('Login')
 
 
@@ -135,15 +177,22 @@ def login():
                 # print(student)
                 if student:
                     # print('student')
+                    login_user(user)
+
                     return render_template('student.html')
                 elif teacher:
                     # print('teacher')
+                    login_user(user)
+
                     return render_template('teacher.html')
 
                 else:
-                    print('admin')
-                login_user(user)
-                return redirect(url_for('dashboard'))
+                    # print('admin')
+                    login_user(user)
+
+                    return redirect(url_for('admin.index'))
+
+            # return redirect(url_for('dashboard'))
     return render_template('login.html', form=form)
 
 
@@ -160,17 +209,6 @@ def logout():
     return redirect(url_for('login'))
 
 
-@ app.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-    return render_template('courses.html', form=form)
-
 @app.route('/getstudentcourses/<student>', methods=['GET'])
 def getStudentCourses(student):
     result = db.session.query(Student, Courses, Enrollment)\
@@ -178,40 +216,94 @@ def getStudentCourses(student):
         .filter(Courses.id == Enrollment.course_id)\
         .filter(Student.id == student).all()
 
-    courses = {}
+    studentCourses = {}
     for course in result:
-        courses.update({course.Enrollment.id : \
+        studentCourses.update({course.Enrollment.id : \
             (course.Courses.courseName, \
             course.Courses.teacher.name, \
             course.Courses.time, \
             course.Courses.numEnrolled, \
             course.Courses.capacity)})
 
-    return courses
+    return studentCourses
 
 @app.route('/getallcourses', methods=['GET'])
 def getAllCourses():
     result = db.session.query(Courses).all()
-
-    courses = {}
+    
+    allCourses = {}
     for course in result:
-        courses.update({course.id: \
+        allCourses.update({course.id: \
             (course.courseName, \
             course.teacher.name, \
             course.time, \
             course.numEnrolled, \
             course.capacity)})
-
-    return courses
-
-# @app.route('/getteachercourses', methods=['GET'])
+    # print(courses)
+    return allCourses
 
 
 
+@app.route('/getteachercourses/<teacher>', methods=['GET'])
+def getTeacherCourses(teacher):
+    result = db.session.query(Courses) \
+            .join(Teacher, teacher==Courses.teacher_id).all()
 
-# @app.route('/getstudentgrades', methods=['GET'])
+    teacherCourses = {}
+
+    for course in result:
+        teacherCourses.update({course.id:
+            (course.courseName,
+            course.teacher.name,
+            course.time,
+            course.numEnrolled,
+            course.capacity
+            )
+
+        })
+    # print(teacherCourses)
+    return teacherCourses
+
+@app.route('/getstudentgrades/<courseid>', methods=['GET'])
+def getStudentGrades(courseid):
+    result = db.session.query(Enrollment, Student, Courses) \
+            .join(Student, Enrollment.student_id == Student.id)\
+            .join(Courses, Enrollment.course_id == courseid) \
+            .all()
+
+    studentGrades = {}
+    for student in result:
+        studentGrades.update({student.Enrollment.id:
+            (
+                student.Student.name,
+                student.Enrollment.grade
+
+            )})
+    # print(studentGrades)
+    return studentGrades
 
 
+
+# @app.route('/grades/<name>', methods=['PUT'])
+# def update_grade(name):
+#     student = Grade.query.get(name)
+#     student.name = request.json['name']
+#     student.grade = request.json['grade']
+#     db.session.commit()
+#     return {student.name: student.grade}
+    
+# add student to course
+# @app.route('/addstudent', methods=['POST'])
+# def addStudentToClass():
+
+# @app.route('/grades/<name>', methods=['DELETE'])
+# def delete_student(name):
+#     student = Grade.query.get(name)
+#     db.session.delete(student)
+#     db.session.commit() 
+#     return {student.name: student.grade}
+    
+# # remove student from course
 
 
 
@@ -230,6 +322,11 @@ def teacher():
 # @login_required
 def student():
     return render_template('student.html')
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    return redirect(url_for('admin.index'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
