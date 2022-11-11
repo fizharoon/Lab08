@@ -1,0 +1,76 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+<!--<link rel="stylesheet" href="mystyle.css">-->
+<!--</head>-->
+{% extends 'bootstrap/base.html' %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block body %}
+<body>
+
+<h2>School University</h2>
+
+{{student.name}}
+
+<div class="tab">
+  <button class="tablinks" onclick="openStudentCourses(event, 'Your Courses')">Your Courses</button>
+  <button class="tablinks" onclick="openAllCourses(event, 'Add Courses')">Add Courses</button>
+  
+</div>
+
+<div id="Your Courses" class="tabcontent">
+  <h3>Your Courses</h3>
+  
+  <table>
+    <thead>
+    <tr>
+      <th>Course Name</th>
+      <th>Teacher</th>
+      <th>Time</th>
+      <th>Students Enrolled</th>
+    </tr>
+  </thead>
+  <tbody id="studentCourses">
+
+  </tbody>
+  </table>
+</div>
+
+<div id="Add Courses" class="tabcontent">
+  <h3>Add Courses</h3>
+  
+  <table>
+    <thead>
+    <tr>
+      <th>Course Name</th>
+      <th>Teacher</th>
+      <th>Time</th>
+      <th>Students Enrolled</th>
+      <th>Add/Drop</th>
+    </tr>
+  </thead>
+  <tbody id="allCourses">
+    <!-- <td><button onclick="enroll()">Bottom Text</button></td> -->
+
+  </tbody>
+    
+  </table>
+</div>
+<br>
+<button><a href="{{url_for('logout')}}">Logout</a></button>
+
+
+   
+</body>
+<!-- <button><a href="{{url_for('logout')}}">Logout</a></button> -->
+
+<script src="{{url_for('static', filename='student.js')}}"></script>
+
+{% endblock %}
+<!--</html>-->

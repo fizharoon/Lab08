@@ -1,0 +1,32 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta http-equiv="X-UA-Compatible" content="IE=edge">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Dashboard</title>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--    <h1>You are logged in.</h1>-->
+<!--    <a href="{{url_for('logout')}}">Press here to logout</a>-->
+<!--</body>-->
+
+<!--</html>-->
+
+{% extends 'bootstrap/base.html' %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='mystyle.css')}}">
+{% endblock %}
+
+{% block body %}
+<body>
+    <h1>Dashboard</h1>
+    <h2>You are logged in.</h2>
+    <br>
+    <button><a href="{{url_for('logout')}}">Logout</a></button>
+</body>
+{% endblock %}
