@@ -16,9 +16,11 @@
 
 <h2>School University</h2>
 
+{{student.name}}
+
 <div class="tab">
-  <button class="tablinks" onclick="openCity(event, 'Your Courses')">Your Courses</button>
-  <button class="tablinks" onclick="openCity(event, 'Add Courses')">Add Courses</button>
+  <button class="tablinks" onclick="openStudentCourses(event, 'Your Courses')">Your Courses</button>
+  <button class="tablinks" onclick="openAllCourses(event, 'Add Courses')">Add Courses</button>
   
 </div>
 
@@ -26,25 +28,17 @@
   <h3>Your Courses</h3>
   
   <table>
+    <thead>
     <tr>
       <th>Course Name</th>
       <th>Teacher</th>
       <th>Time</th>
       <th>Students Enrolled</th>
     </tr>
-    <tr>
-      <td>Physics 121</td>
-      <td>Luis Gonzalez</td>
-      <td>TR 11:00-11:50 AM</td>
-       <td>6/10</td>
-    </tr>
-    <tr>
-      <td>Physics 121</td>
-      <td>Luis Gonzalez</td>
-      <td>TR 11:00-11:50 AM</td>
-       <td>6/10</td>
-    </tr>
-   
+  </thead>
+  <tbody id="studentCourses">
+
+  </tbody>
   </table>
 </div>
 
@@ -52,6 +46,7 @@
   <h3>Add Courses</h3>
   
   <table>
+    <thead>
     <tr>
       <th>Course Name</th>
       <th>Teacher</th>
@@ -59,50 +54,23 @@
       <th>Students Enrolled</th>
       <th>Add/Drop</th>
     </tr>
-    <tr>
-      <td>Physics 142</td>
-      <td>ouais</td>
-      <td>TR 12:00-11:50 AM</td>
-       <td>6/10</td>
-      <td></td>
-      
-    </tr>
-    <tr>
-      <td>Physics 121</td>
-      <td>Luis Gonzalez</td>
-      <td>TR 11:00-11:50 AM</td>
-       <td>6/10</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Physics 121</td>
-      <td>Luis Gonzalez</td>
-      <td>TR 11:00-11:50 AM</td>
-       <td>6/10</td>
-      <td></td>
-    </tr>
-    </table>
+  </thead>
+  <tbody id="allCourses">
+    <!-- <td><button onclick="enroll()">Bottom Text</button></td> -->
+
+  </tbody>
+    
+  </table>
 </div>
 <br>
 <button><a href="{{url_for('logout')}}">Logout</a></button>
 
 
-<script>
-function openCity(evt, cityName) {
-  var i, tabcontent, tablinks;
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-  document.getElementById(cityName).style.display = "block";
-  evt.currentTarget.className += " active";
-}
-</script>
    
 </body>
+<!-- <button><a href="{{url_for('logout')}}">Logout</a></button> -->
+
+<script src="{{url_for('static', filename='student.js')}}"></script>
+
 {% endblock %}
 <!--</html>-->

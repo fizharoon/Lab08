@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -14,7 +14,7 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 boot = Bootstrap(app)
 app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/data.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
 app.config['SECRET_KEY'] = 'secretKey'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
@@ -58,6 +58,8 @@ class User(db.Model, UserMixin):
     id = db.Column('id', db.Integer, primary_key = True)
     username = db.Column('username', db.String(100))
     password = db.Column('password', db.String(100))
+    # def get_id(self):
+    #     return id
 
 class Teacher(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)
@@ -92,9 +94,9 @@ class Courses(db.Model):
 
 class Enrollment(db.Model):
     __tablename__='Enrollment'
-    id = db.Column('id', db.Integer, primary_key = True)
-    student_id = db.Column('student_id', db.ForeignKey('Student.id'), nullable=False)
-    course_id = db.Column('course_id', db.ForeignKey('Courses.id'), nullable=False)
+    id = db.Column('id', db.Integer)
+    student_id = db.Column('student_id', db.ForeignKey('Student.id'), primary_key=True)
+    course_id = db.Column('course_id', db.ForeignKey('Courses.id'), primary_key=True)
     grade = db.Column('grade', db.Integer)
     student = db.relationship('Student', backref=db.backref('Enrollment'))
     courses = db.relationship('Courses', backref=db.backref('Enrollment'))
@@ -180,12 +182,12 @@ def login():
                     # print('student')
                     login_user(user)
 
-                    return render_template('student.html')
+                    return redirect('/student')
                 elif teacher:
                     # print('teacher')
                     login_user(user)
 
-                    return render_template('teacher.html')
+                    return redirect('/teacher')
 
                 else:
                     # print('admin')
@@ -210,45 +212,53 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/getstudentcourses/<student>', methods=['GET'])
-def getStudentCourses(student):
+@app.route('/getstudentcourses', methods=['GET'])
+def getStudentCourses():
+    student = Student.query.filter_by(user_id=current_user.id).first()
     result = db.session.query(Student, Courses, Enrollment)\
         .filter(Student.id == Enrollment.student_id)\
         .filter(Courses.id == Enrollment.course_id)\
-        .filter(Student.id == student).all()
+        .filter(Student.id == student.id).all()
 
     studentCourses = {}
     for course in result:
         studentCourses.update({course.Enrollment.id : \
-            (course.Courses.courseName, \
-            course.Courses.teacher.name, \
-            course.Courses.time, \
-            course.Courses.numEnrolled, \
-            course.Courses.capacity)})
+            (course.Courses.courseName,
+            course.Courses.teacher.name,
+            course.Courses.time,
+            str(course.Courses.numEnrolled) + '/' + str(course.Courses.capacity)
+            )})
 
     return studentCourses
 
 @app.route('/getallcourses', methods=['GET'])
 def getAllCourses():
-    result = db.session.query(Courses).all()
-    
+    student = Student.query.filter_by(user_id=current_user.id).first()
+    subquery = db.session.query(Enrollment).join(Student, student==Enrollment.student).subquery()
+    result = db.session.query(Courses, subquery).outerjoin(subquery, Courses.id == subquery.c.course_id)
+    # print(result)
+    # result = db.session.query(Courses)
     allCourses = {}
     for course in result:
-        allCourses.update({course.id: \
-            (course.courseName, \
-            course.teacher.name, \
-            course.time, \
-            course.numEnrolled, \
-            course.capacity)})
-    # print(courses)
+        # print(course)
+        allCourses.update({course.Courses.id: \
+            (course.Courses.courseName, \
+            course.Courses.teacher.name, \
+            course.Courses.time, \
+            str(course.Courses.numEnrolled) + '/' + str(course.Courses.capacity),
+            'enrolled' if course[1] else 'not enrolled'
+            )})
+    # print(allCourses)
     return allCourses
 
 
 
-@app.route('/getteachercourses/<teacher>', methods=['GET'])
-def getTeacherCourses(teacher):
+@app.route('/getteachercourses', methods=['GET'])
+def getTeacherCourses():
+    teacher = Teacher.query.filter_by(user_id=current_user.id).first()
+
     result = db.session.query(Courses) \
-            .join(Teacher, teacher==Courses.teacher_id).all()
+            .join(Teacher, teacher.id==Courses.teacher_id).all()
 
     teacherCourses = {}
 
@@ -292,22 +302,68 @@ def getStudentGrades(courseid):
 #     student.grade = request.json['grade']
 #     db.session.commit()
 #     return {student.name: student.grade}
-    
-# add student to course
-# @app.route('/addstudent', methods=['POST'])
-# def addStudentToClass():
+# @app.route('/grades', methods=['POST'])
+# def create_student():
+#     student = Grade(name=request.json['name'], grade=request.json['grade'])
+#     db.session.add(student)
+#     db.session.commit()
 
-# @app.route('/grades/<name>', methods=['DELETE'])
-# def delete_student(name):
-#     student = Grade.query.get(name)
-#     db.session.delete(student)
-#     db.session.commit() 
 #     return {student.name: student.grade}
+# add student to course
+@app.route('/addstudent', methods=['POST'])
+def addStudentToClass():
+    course = Courses.query.get(request.json['course_id'])
+    if course.numEnrolled + 1 > course.capacity:
+        return abort(406)
+
+    course.numEnrolled += 1
+    print(Student.query.filter_by(user_id=current_user.id).first().id, request.json['course_id'])
+
+    enrollment = Enrollment(student_id=Student.query.filter_by(user_id=current_user.id).first().id, course_id=request.json['course_id'])
+    db.session.add(enrollment)
+    db.session.commit()
+
+    return {enrollment.id : [enrollment.student_id, enrollment.course_id]}
+
+@app.route('/dropcourse', methods=['DELETE'])
+def delete_student():
+    student_id = current_user.id
+    course_id = request.json['course_id']
+
+    course = Courses.query.get(course_id)
+    course.numEnrolled -= 1
+
+    enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
+
+    print(enrollment)
+
+    db.session.delete(enrollment)
+    db.session.commit() 
+    return {}, 204
     
 # # remove student from course
 
 
 
+
+# @app.route('/courses', methods=['GET', 'POST'])
+# # @login_required
+# def courses():
+#     return render_template('courses.html')
+
+# @app.route('/teacher', methods=['GET', 'POST'])
+# # @login_required
+# def teacher():
+#     return render_template('teacher.html')
+
+# @app.route('/student', methods=['GET', 'POST'])
+# # @login_required
+# def student():
+#     return render_template('student.html')
+
+# @app.route('/admin', methods=['GET', 'POST'])
+# def admin():
+#     return redirect(url_for('admin.index'))
 
 @app.route('/courses', methods=['GET', 'POST'])
 @login_required
@@ -326,9 +382,9 @@ def teacher():
     #print(teach)
     t = teach.id
     #print(t)
-    courses = getTeacherCourses(t)
+    courses = getTeacherCourses()
     print(courses)
-    return render_template('teacher.html', courses=courses)
+    return render_template('teacher.html', courses=courses, teacher=teach)
 
 
 @app.route('/student', methods=['GET', 'POST'])
@@ -337,14 +393,13 @@ def student():
     user = current_user.id
     stdnt = Student.query.filter_by(user_id=user).first()
     s = stdnt.id
-    courses = getStudentCourses(s)
-    print(courses)
-    return render_template('student.html', courses=courses)
+    # courses = getStudentCourses(s)
+    # print(courses)
+    return render_template('student.html', student=stdnt)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     return redirect(url_for('admin.index'))
-
 
 if __name__ == "__main__":
     app.run(debug=True)
