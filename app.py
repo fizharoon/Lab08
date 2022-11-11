@@ -14,7 +14,7 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 boot = Bootstrap(app)
 app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/data.sqlite' #login shows error if instance/ is not included
 app.config['SECRET_KEY'] = 'secretKey'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
@@ -263,8 +263,9 @@ def getTeacherCourses():
     teacherCourses = {}
 
     for course in result:
-        teacherCourses.update({course.id:
-            {'cName' : course.courseName,
+        teacherCourses.update({ course.id:
+            {'id' : course.id,
+            'cName' : course.courseName,
             'tName' : course.teacher.name,
             'time' : course.time,
             'enrolled' : course.numEnrolled,
@@ -343,9 +344,6 @@ def delete_student():
     
 # # remove student from course
 
-
-
-
 # @app.route('/courses', methods=['GET', 'POST'])
 # # @login_required
 # def courses():
@@ -370,7 +368,9 @@ def delete_student():
 def courses():
     user = current_user.id
     teach = Teacher.query.filter_by(user_id=user).first()
-    t = teach.id
+    courses = getTeacherCourses()
+
+
     return render_template('courses.html')
 
 @app.route('/teacher', methods=['GET', 'POST'])
