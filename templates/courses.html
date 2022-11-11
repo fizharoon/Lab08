@@ -8,6 +8,7 @@
 
 {% block body %}
 <body>
+<div>
     <h1>Course Name</h1>
     <h2>Students Enrolled</h2>
     <table>
@@ -33,6 +34,6 @@
     <br>
     <button><a href="{{ url_for('teacher') }}">Back</a></button>
     <button><a href="{{url_for('logout')}}">Logout</a></button>
-
+</div>
 </body>
 {% endblock %}

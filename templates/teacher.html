@@ -8,10 +8,10 @@
 
 {% block body %}
 <body>
-
-{{teacher.name}}
-
+<div>
+  <h4 class="col1">{{teacher.name}}</h4>
 <div id="Your Courses" >
+
   <h3>Your Courses</h3>
   <table>
     <thead>
@@ -32,11 +32,9 @@
   </table>
 
 </div>
-
 <br>
-<button class="button"><a href="{{url_for('logout')}}">Logout</a></button>
-
-
+  <button class="button"><a href="{{url_for('logout')}}">Logout</a></button>
+</div>
 </body>
 
 <script src="{{url_for('static', filename='teacher.js')}}"></script>
