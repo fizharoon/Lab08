@@ -8,31 +8,28 @@
 
 {% block body %}
 <body>
-    <h1>Course Name</h1>
+    <h1>{{course.courseName}}</h1>
     <h2>Students Enrolled</h2>
     <table>
     <tr>
       <th>Name</th>
       <th>Grade</th>
     </tr>
+    {% for grade in studentGrades %}
     <tr>
-      <td>ouais</td>
-        <td contenteditable="true">90</td>
-        <!-- <td contenteditable='true'></td> -->
-
+      <td>{{studentGrades[grade]['name']}}</td>
+       <td contenteditable="true" onChange="updateGrades()">{{studentGrades[grade]['grade']}}</td>
+       <td><button onClick="updateGrades(grade)">Update</button></td>
+       <td hidden id="course_id">{{course.id}}</td>
+       <td hidden id="student_id">{{studentGrades[grade]['id']}}</td>
     </tr>
-    <tr>
-      <td>Luis Gonzalez</td>
-       <td contenteditable="true">85</td>
-    </tr>
-    <tr>
-      <td>Luis Gonzalez</td>
-        <td contenteditable="true">91</td>
-    </tr>
+    {% endfor %}
     </table>
     <br>
-    <button><a href="{{ url_for('teacher') }}">Back</a></button>
+    <button><a href="{{ url_for('teacher') }}" onclick="updateGrades()">Back</a></button>
+    <!-- <button><a onclick="updateGrades()">Update</a></button> -->
     <button><a href="{{url_for('logout')}}">Logout</a></button>
 
 </body>
+<script src="{{url_for('static', filename='teacher.js')}}"></script>
 {% endblock %}

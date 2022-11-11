@@ -25,3 +25,18 @@ function getTeacherCourses() {
     }
     xhttp.send();
 }
+
+function updateGrades() {
+    course_id = document.getElementById("course_id")
+    console.log(course_id, student_id);
+    newUrl = url + '/updategrade';
+    xhttp.open("PUT", newUrl);
+    xhttp.onload = function(){
+      
+    }
+    // console.log(document.)
+    xhttp.setRequestHeader("Content-Type", "application/json");
+    // const body = {"student_id": , "course_id": , "grade": };
+    // xhttp.send(JSON.stringify(body));
+
+}

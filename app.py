@@ -268,11 +268,12 @@ def getTeacherCourses():
             'tName' : course.teacher.name,
             'time' : course.time,
             'enrolled' : course.numEnrolled,
-            'capacity' : course.capacity
+            'capacity' : course.capacity,
+            'id' : course.id
              }
 
         })
-    # print(teacherCourses)
+    print(teacherCourses)
     return teacherCourses
 
 @app.route('/getstudentgrades/<courseid>', methods=['GET'])
@@ -317,7 +318,7 @@ def addStudentToClass():
         return abort(406)
 
     course.numEnrolled += 1
-    print(Student.query.filter_by(user_id=current_user.id).first().id, request.json['course_id'])
+    # print(Student.query.filter_by(user_id=current_user.id).first().id, request.json['course_id'])
 
     enrollment = Enrollment(student_id=Student.query.filter_by(user_id=current_user.id).first().id, course_id=request.json['course_id'])
     db.session.add(enrollment)
@@ -341,7 +342,18 @@ def delete_student():
     db.session.commit() 
     return {}, 204
     
-# # remove student from course
+@app.route('/updategrade', methods=['PUT'])
+def updateGrade():
+    student = request.json['student_id']
+    course = request.json['course_id']
+    grade = request.json['grade']
+
+    enrollment = Enrollment.query.get(student_id=student, course_id=course)
+    enrollment.grade = grade
+
+    db.session.commit()
+
+    return 200
 
 
 
@@ -365,25 +377,33 @@ def delete_student():
 # def admin():
 #     return redirect(url_for('admin.index'))
 
-@app.route('/courses', methods=['GET', 'POST'])
+@app.route('/courses/<courseid>', methods=['GET', 'POST'])
 @login_required
-def courses():
-    user = current_user.id
-    teach = Teacher.query.filter_by(user_id=user).first()
-    t = teach.id
-    return render_template('courses.html')
+def courses(courseid):
+    course = Courses.query.get(courseid)
+    
+    result = db.session.query(Enrollment, Student, Courses) \
+            .join(Student, Enrollment.student_id == Student.id)\
+            .join(Courses, Enrollment.course_id == courseid) \
+            .all()
+
+    studentGrades = {}
+    for student in result:
+        studentGrades.update({student.Enrollment.id:
+            {
+                'id' : student.Student.id,
+                'name' : student.Student.name,
+                'grade' : student.Enrollment.grade
+
+            }})
+    return render_template('courses.html', course=course, studentGrades=studentGrades)
 
 @app.route('/teacher', methods=['GET', 'POST'])
 @login_required
 def teacher():
     user = current_user.id
-    #print(user)
     teach = Teacher.query.filter_by(user_id=user).first()
-    #print(teach)
-    t = teach.id
-    #print(t)
     courses = getTeacherCourses()
-    print(courses)
     return render_template('teacher.html', courses=courses, teacher=teach)
 
 
@@ -392,9 +412,6 @@ def teacher():
 def student():
     user = current_user.id
     stdnt = Student.query.filter_by(user_id=user).first()
-    s = stdnt.id
-    # courses = getStudentCourses(s)
-    # print(courses)
     return render_template('student.html', student=stdnt)
 
 @app.route('/admin', methods=['GET', 'POST'])

@@ -23,7 +23,7 @@
     </tr>
     {% for c in courses%}
     <tr>
-      <td><a href="{{url_for('courses')}}">{{courses[c]['cName']}}</a></td>
+      <td><a href="/courses/{{courses[c]['id']}}">{{courses[c]['cName']}}</a></td>
       <td>{{courses[c]['tName']}}</td>
       <td>{{courses[c]['time']}}</td>
        <td>{{courses[c]['enrolled']}}/{{courses[c]['capacity']}}</td>
