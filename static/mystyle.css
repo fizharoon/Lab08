@@ -1,39 +1,54 @@
 
 body {
-  font-family: Arial;
-  text-align: center;
-  vertical-align: center;
-  border-width: 5px;
-  border-style: outset;
-  margin: 20px;
-  padding: 10px;
+    font-family: Helvetica, sans-serif;
+    text-align: center;
+    vertical-align: center;
 }
 
-h1, h2, h3{
+h1, h2, h3 {
     padding: 10px;
+    text-align: center;
+    vertical-align: center;
+
+}
+
+h4 {
+    padding: 10px;
+    vertical-align: center;
+    text-align: center;
+    background-color: #ccfff2;
+    border-style: outset;
 }
 
 form {
     padding: 5px;
 }
 
-.button {
-    text-align: left;
+div {
+    background-color: #ccffff;
+    border-width: 5px;
+    border-style: outset;
+    margin: 20px;
+    padding: 10px;
 }
 
 .col1, .col3 {
-    width: 220px;
+    width: 25%;
 }
 
-col2 {
-    width: 440px;
+.col2 {
+    width: 50%;
 }
 
+.button {
+    vertical-align: right;
+    text-align: right;
+}
 
 /* Style the tab */
 .tab {
   overflow: hidden;
-  border: 1px solid #ccc;
+  border: 2px inset #ccc;
   background-color: #f1f1f1;
 }
 
@@ -41,7 +56,7 @@ col2 {
 .tab button {
   background-color: inherit;
   float: left;
-  border: none;
+  border: outset;
   outline: none;
   cursor: pointer;
   padding: 14px 16px;
@@ -63,22 +78,23 @@ col2 {
 .tabcontent {
   display: none;
   padding: 6px 12px;
-  border: 1px solid #ccc;
+  border: 2px outset #ccc;
   border-top: none;
 }
 table {
-  font-family: arial, sans-serif;
+  font-family: Helvetica, sans-serif;
   border-collapse: collapse;
   width: 100%;
+  background-color: #ccfff2;
 }
 
 td, th {
-  border: 1px solid #dddddd;
+  border: 2px inset #dddddd;
   text-align: left;
   padding: 8px;
 }
 
 tr:nth-child(even) {
-  background-color: #dddddd;
+  background-color: #b3ffec;
 }
 
