@@ -14,8 +14,9 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 boot = Bootstrap(app)
 app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/data.sqlite'
 app.config['SECRET_KEY'] = 'secretKey'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 
@@ -253,12 +254,12 @@ def getTeacherCourses(teacher):
 
     for course in result:
         teacherCourses.update({course.id:
-            (course.courseName,
-            course.teacher.name,
-            course.time,
-            course.numEnrolled,
-            course.capacity
-            )
+            {'cName' : course.courseName,
+            'tName' : course.teacher.name,
+            'time' : course.time,
+            'enrolled' : course.numEnrolled,
+            'capacity' : course.capacity
+             }
 
         })
     # print(teacherCourses)
@@ -274,11 +275,11 @@ def getStudentGrades(courseid):
     studentGrades = {}
     for student in result:
         studentGrades.update({student.Enrollment.id:
-            (
-                student.Student.name,
-                student.Enrollment.grade
+            {
+                'name' : student.Student.name,
+                'grade' : student.Enrollment.grade
 
-            )})
+            }})
     # print(studentGrades)
     return studentGrades
 
@@ -309,19 +310,36 @@ def getStudentGrades(courseid):
 
 
 @app.route('/courses', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def courses():
+    user = current_user.id
+    teach = Teacher.query.filter_by(user_id=user).first()
+    t = teach.id
     return render_template('courses.html')
 
 @app.route('/teacher', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def teacher():
-    return render_template('teacher.html')
+    user = current_user.id
+    #print(user)
+    teach = Teacher.query.filter_by(user_id=user).first()
+    #print(teach)
+    t = teach.id
+    #print(t)
+    courses = getTeacherCourses(t)
+    print(courses)
+    return render_template('teacher.html', courses=courses)
+
 
 @app.route('/student', methods=['GET', 'POST'])
 # @login_required
 def student():
-    return render_template('student.html')
+    user = current_user.id
+    stdnt = Student.query.filter_by(user_id=user).first()
+    s = stdnt.id
+    courses = getStudentCourses(s)
+    print(courses)
+    return render_template('student.html', courses=courses)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
