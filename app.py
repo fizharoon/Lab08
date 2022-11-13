@@ -4,17 +4,16 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, log
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
-from flask_bcrypt import Bcrypt
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.menu import MenuLink
 
 app = Flask(__name__)
 # db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
 boot = Bootstrap(app)
 app.config['FLASK_ADMIN_SWATCH'] = 'flatly'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/data.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite'
 app.config['SECRET_KEY'] = 'secretKey'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
@@ -52,7 +51,7 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for('login'))
 
 admin = Admin(app, index_view=MyAdminIndexView())
-
+admin.add_link(MenuLink(name='Logout', category='', url="/"))
 
 class User(db.Model, UserMixin):
     id = db.Column('id', db.Integer, primary_key = True)
@@ -163,12 +162,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -181,21 +175,15 @@ def login():
                 if student:
                     # print('student')
                     login_user(user)
-
                     return redirect('/student')
                 elif teacher:
                     # print('teacher')
                     login_user(user)
-
                     return redirect('/teacher')
-
                 else:
                     # print('admin')
                     login_user(user)
-
                     return redirect(url_for('admin.index'))
-
-            # return redirect(url_for('dashboard'))
     return render_template('login.html', form=form)
 
 
