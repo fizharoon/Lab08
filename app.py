@@ -9,6 +9,7 @@ from flask_bcrypt import Bcrypt
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.menu import MenuLink 
 
 app = Flask(__name__)
 # db = SQLAlchemy(app)
@@ -53,6 +54,7 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for('login'))
 
 admin = Admin(app, index_view=MyAdminIndexView())
+admin.add_link(MenuLink(name='Logout', category='', url="/")) 
 
 
 class User(db.Model, UserMixin):
@@ -164,12 +166,12 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-@app.route('/')
-def home():
-    return render_template('home.html')
+# @app.route('/')
+# def home():
+#     return render_template('home.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
