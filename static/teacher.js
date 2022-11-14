@@ -26,17 +26,34 @@ function getTeacherCourses() {
     xhttp.send();
 }
 
-function updateGrades() {
-    course_id = document.getElementById("course_id")
-    console.log(course_id, student_id);
+// function updateStudent() {
+//     var studentName = document.getElementById("studentNameUp").value;
+//     var studentGrade = document.getElementById("studentGradeUp").value;
+//     document.getElementById("studentNameUp").value = "";
+//     document.getElementById("studentGradeUp").value = "";
+//     // var xhttp = new XMLHttpRequest();
+//     var newUpUrl = url + "/" + studentName;
+//     xhttp.open("PUT", newUpUrl);
+//     xhttp.setRequestHeader("Content-Type", "application/json");
+//     const body = {"name": studentName, "grade": studentGrade};
+//     xhttp.onload = function() {}
+//     xhttp.send(JSON.stringify(body));
+//}
+
+function updateGrades(grade, student_id) {
+    // console.log('this is grade: ', grade, studentId)
+    course_id = document.getElementById("course_id").innerText
+    // student_id = document.getElementById("student_id").innerText
+    console.log(course_id, student_id, grade);
     newUrl = url + '/updategrade';
     xhttp.open("PUT", newUrl);
     xhttp.onload = function(){
       
     }
+
     // console.log(document.)
     xhttp.setRequestHeader("Content-Type", "application/json");
-    // const body = {"student_id": , "course_id": , "grade": };
-    // xhttp.send(JSON.stringify(body));
+    const body = {"student_id": student_id, "course_id": course_id, "grade": grade};
+    xhttp.send(JSON.stringify(body));
 
 }

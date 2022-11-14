@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request, abort
+from sqlalchemy import select
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -273,7 +274,7 @@ def getTeacherCourses():
              }
 
         })
-    print(teacherCourses)
+    # print(teacherCourses)
     return teacherCourses
 
 @app.route('/getstudentgrades/<courseid>', methods=['GET'])
@@ -344,16 +345,22 @@ def delete_student():
     
 @app.route('/updategrade', methods=['PUT'])
 def updateGrade():
-    student = request.json['student_id']
-    course = request.json['course_id']
+    student_id = request.json['student_id']
+    course_id = request.json['course_id']
     grade = request.json['grade']
 
-    enrollment = Enrollment.query.get(student_id=student, course_id=course)
-    enrollment.grade = grade
+    print('this is new', student_id, course_id, grade)
+    # enrollment = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
+    db.session.query(Enrollment).filter(Enrollment.student_id == student_id).filter(Enrollment.course_id == course_id).update(
+        {"grade": grade}, synchronize_session="fetch"
+    )
 
+    # enrollment = db.session.query(Enrollment).filter(student_id=student_id, course_id=course_id)
+    # enrollment.grade = grade
+    # print(enrollment)
     db.session.commit()
 
-    return 200
+    return "200"
 
 
 

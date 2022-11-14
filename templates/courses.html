@@ -18,15 +18,16 @@
     {% for grade in studentGrades %}
     <tr>
       <td>{{studentGrades[grade]['name']}}</td>
-       <td contenteditable="true" onChange="updateGrades()">{{studentGrades[grade]['grade']}}</td>
-       <td><button onClick="updateGrades(grade)">Update</button></td>
+       <td ><input type="text" value="{{studentGrades[grade]['grade']}}" onchange="
+        updateGrades(this.value, this.dataset.student_id)" data-student_id="{{studentGrades[grade]['id']}}"></td>
+       <!-- <td><button onclick="updateGrades({grade})">Update</button></td> -->
        <td hidden id="course_id">{{course.id}}</td>
        <td hidden id="student_id">{{studentGrades[grade]['id']}}</td>
     </tr>
     {% endfor %}
     </table>
     <br>
-    <button><a href="{{ url_for('teacher') }}" onclick="updateGrades()">Back</a></button>
+    <button><a href="{{ url_for('teacher') }}">Back</a></button>
     <!-- <button><a onclick="updateGrades()">Update</a></button> -->
     <button><a href="{{url_for('logout')}}">Logout</a></button>
 
